@@ -1,0 +1,45 @@
+version: "3.5"
+services:
+  db:
+    entrypoint: "/bin/bash -c '\n  echo \"$$DB_AUTO_CREATE_SH\" > /docker-entrypoint-initdb.d/db-auto-create.sh\n\
+      \  exec /usr/local/bin/docker-entrypoint.sh mysqld\n'\n"
+    environment:
+      DB_AUTO_CREATE_DB: shopware shopware_e2e shopware_test
+      DB_AUTO_CREATE_SH: "if [ -n \"$$MYSQL_USER\" ] && [ -n \"$$DB_AUTO_CREATE_DB\"\
+        \ ]; then\n  for MYSQL_DATABASE in $$DB_AUTO_CREATE_DB; do\n    mysql_note\
+        \ \"Creating database $${MYSQL_DATABASE}\"\n    docker_process_sql --database=mysql\
+        \ <<<\"CREATE DATABASE IF NOT EXISTS \\`$$MYSQL_DATABASE\\`;\"\n\n    mysql_note\
+        \ \"Giving user $${MYSQL_USER} access to schema $${MYSQL_DATABASE}\"\n   \
+        \ docker_process_sql --database=mysql <<<\"GRANT ALL ON \\`$${MYSQL_DATABASE//_/\\\
+        \\_}\\`.* TO '$$MYSQL_USER'@'%';\"\n  done\n  docker_process_sql --database=mysql\
+        \ <<<\"FLUSH PRIVILEGES;\"\nfi"
+      MYSQL_DATABASE: shopware
+      MYSQL_PASSWORD: app
+      MYSQL_ROOT_PASSWORD: app
+      MYSQL_USER: app
+    hostname: ox6-mariadb
+
+    image: docker.io/wardenenv/mariadb:10.4
+    networks:
+      default:
+        aliases:
+        - mysql
+    volumes:
+    - dbdata:/var/lib/mysql:rw
+  webserver:
+    hostname: ox6-webserver
+    build:
+      context: /Users/florianbender/Dev/ox6-local
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.ox6-webserver.priority: '2'
+      traefik.http.routers.ox6-webserver.rule: ' HostRegexp(`{subdomain:.+}.ox6.test`)
+        || Host(`ox6.test`)'
+      traefik.http.routers.ox6-webserver.tls: "true"
+      traefik.http.services.ox6-webserver.loadbalancer.server.port: '80'
+    volumes:
+    - appdata:/var/www/html:rw
+    - ./webserver.conf:/etc/apache2/sites-available/000-default.conf
+volumes:
+  dbdata: {}
+  appdata: {}
