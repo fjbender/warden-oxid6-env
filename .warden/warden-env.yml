@@ -29,7 +29,7 @@ services:
   webserver:
     hostname: ox6-webserver
     build:
-      context: /Users/florianbender/Dev/ox6-local
+      context: ../
     labels:
       traefik.enable: "true"
       traefik.http.routers.ox6-webserver.priority: '2'
