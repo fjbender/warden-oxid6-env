@@ -4,7 +4,7 @@ services:
     entrypoint: "/bin/bash -c '\n  echo \"$$DB_AUTO_CREATE_SH\" > /docker-entrypoint-initdb.d/db-auto-create.sh\n\
       \  exec /usr/local/bin/docker-entrypoint.sh mysqld\n'\n"
     environment:
-      DB_AUTO_CREATE_DB: shopware shopware_e2e shopware_test
+      DB_AUTO_CREATE_DB: oxid
       DB_AUTO_CREATE_SH: "if [ -n \"$$MYSQL_USER\" ] && [ -n \"$$DB_AUTO_CREATE_DB\"\
         \ ]; then\n  for MYSQL_DATABASE in $$DB_AUTO_CREATE_DB; do\n    mysql_note\
         \ \"Creating database $${MYSQL_DATABASE}\"\n    docker_process_sql --database=mysql\
@@ -13,10 +13,10 @@ services:
         \ docker_process_sql --database=mysql <<<\"GRANT ALL ON \\`$${MYSQL_DATABASE//_/\\\
         \\_}\\`.* TO '$$MYSQL_USER'@'%';\"\n  done\n  docker_process_sql --database=mysql\
         \ <<<\"FLUSH PRIVILEGES;\"\nfi"
-      MYSQL_DATABASE: shopware
-      MYSQL_PASSWORD: app
-      MYSQL_ROOT_PASSWORD: app
-      MYSQL_USER: app
+      MYSQL_DATABASE: oxid
+      MYSQL_PASSWORD: oxid
+      MYSQL_ROOT_PASSWORD: oxid
+      MYSQL_USER: oxid
     hostname: ox6-mariadb
 
     image: docker.io/wardenenv/mariadb:10.4
